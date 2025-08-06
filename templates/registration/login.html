@@ -1,6 +1,18 @@
-<h2>Log In</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form }}
-  <button type="submit">Log In</button>
-</form>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - OpenEye</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <script>
+        // Redirect to Cognito login
+        window.location.href = "/login/";
+    </script>
+    <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
+        <h2>Redirecting to Login...</h2>
+        <p>If you are not redirected automatically, <a href="/login/">click here</a>.</p>
+    </div>
+</body>
+</html>
