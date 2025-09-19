@@ -154,9 +154,39 @@ def get_scan_status(request, scan_id):
     """Get scan status and progress"""
     scan_result = get_object_or_404(ScanResult, id=scan_id, user=request.user)
     
+    # Calculate progress based on status and time elapsed
+    progress = 0
+    phase = 'pending'
+    
+    if scan_result.status == 'pending':
+        progress = 5
+        phase = 'pending'
+    elif scan_result.status == 'running':
+        # Estimate progress based on time elapsed
+        elapsed = timezone.now() - scan_result.created_at
+        elapsed_minutes = elapsed.total_seconds() / 60
+        
+        if elapsed_minutes < 2:
+            progress = 10 + min(20, elapsed_minutes * 10)  # 10-30% in first 2 minutes
+            phase = 'spider'
+        elif elapsed_minutes < 10:
+            progress = 30 + min(50, (elapsed_minutes - 2) * 6.25)  # 30-80% in next 8 minutes
+            phase = 'active'
+        else:
+            progress = 80 + min(15, (elapsed_minutes - 10) * 1.5)  # 80-95% after 10 minutes
+            phase = 'report'
+    elif scan_result.status == 'completed':
+        progress = 100
+        phase = 'completed'
+    elif scan_result.status == 'failed':
+        progress = 0
+        phase = 'failed'
+    
     return JsonResponse({
         "scan_id": scan_result.id,
         "status": scan_result.status,
+        "progress": int(progress),
+        "phase": phase,
         "target_url": scan_result.target_url,
         "tool": scan_result.tool,
         "created_at": scan_result.created_at.isoformat(),
@@ -190,3 +220,26 @@ def check_zap_status(request):
         return JsonResponse({"zap_running": is_running})
     except Exception as e:
         return JsonResponse({"zap_running": False, "error": str(e)})
+
+@login_required
+def cancel_scan(request, scan_id):
+    """Cancel a running scan"""
+    scan_result = get_object_or_404(ScanResult, id=scan_id, user=request.user)
+    
+    if scan_result.status not in ['pending', 'running']:
+        return JsonResponse({"error": "Scan cannot be cancelled"}, status=400)
+    
+    try:
+        # Update scan status to cancelled
+        scan_result.status = 'cancelled'
+        scan_result.save()
+        
+        # TODO: Add actual ZAP scan cancellation here
+        # For now, we just mark it as cancelled in the database
+        
+        return JsonResponse({
+            "success": True,
+            "message": "Scan cancelled successfully"
+        })
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

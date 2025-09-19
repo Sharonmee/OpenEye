@@ -13,5 +13,6 @@ urlpatterns = [
     path("api/start-scan/", views.start_scan_api, name="start_scan_api"),
     path("api/scan/<int:scan_id>/status/", views.get_scan_status, name="get_scan_status"),
     path("api/scan/<int:scan_id>/results/", views.get_scan_results, name="get_scan_results"),
+    path("api/scan/<int:scan_id>/cancel/", views.cancel_scan, name="cancel_scan"),
     path("api/zap-status/", views.check_zap_status, name="check_zap_status"),
 ]

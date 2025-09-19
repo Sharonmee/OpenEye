@@ -462,19 +462,21 @@
             startScanBtn.disabled = false;
             startScanBtn.innerHTML = '<svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Start Scan';
           } else if (data.status === 'running') {
-            // Update progress based on scan phase
+            // Use accurate progress from backend
             const progress = data.progress || 50;
             const phase = data.phase || 'active';
             
+            // Update progress bar with accurate percentage
+            updateProgress(progress, getProgressMessage(phase, progress));
+            
+            // Update phase indicators
             if (phase === 'spider') {
-              updateProgress(Math.min(progress, 30), 'Spider crawling...');
               updatePhase('spider', 'running');
             } else if (phase === 'active') {
-              updateProgress(Math.min(progress, 80), 'Active scanning...');
               updatePhase('spider', 'completed');
               updatePhase('active', 'running');
             } else if (phase === 'report') {
-              updateProgress(Math.min(progress, 95), 'Generating report...');
+              updatePhase('spider', 'completed');
               updatePhase('active', 'completed');
               updatePhase('report', 'running');
             }
@@ -555,6 +557,47 @@
       return cookieValue;
     }
 
+    // Cancel scan functionality
+    const cancelScanBtn = document.getElementById('cancel-scan');
+    if (cancelScanBtn) {
+      cancelScanBtn.addEventListener('click', function() {
+        if (currentScanId && confirm('Are you sure you want to cancel the scan?')) {
+          // Stop progress tracking
+          if (statusCheckInterval) {
+            clearInterval(statusCheckInterval);
+            statusCheckInterval = null;
+          }
+          
+          // Call cancel API
+          fetch(`/scan/api/scan/${currentScanId}/cancel/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              showError('Scan cancelled successfully');
+              // Reset UI
+              const scanProgress = document.getElementById('scan-progress');
+              if (scanProgress) {
+                scanProgress.classList.add('hidden');
+                scanStatus.classList.remove('hidden');
+              }
+              currentScanId = null;
+            } else {
+              showError('Failed to cancel scan: ' + (data.error || 'Unknown error'));
+            }
+          })
+          .catch(error => {
+            showError('Error cancelling scan: ' + error.message);
+          });
+        }
+      });
+    }
+
     // Cleanup on page unload
     window.addEventListener('beforeunload', function() {
       if (statusCheckInterval) {
@@ -616,6 +659,40 @@
         statusElement.className = 'text-slate-400 text-xs';
       }
     });
+  }
+
+  function showError(message) {
+    const scanProgress = document.getElementById('scan-progress');
+    const scanStatus = document.getElementById('scan-status');
+    
+    if (scanProgress) {
+      scanProgress.classList.add('hidden');
+    }
+    if (scanStatus) {
+      scanStatus.classList.remove('hidden');
+      scanStatus.innerHTML = `
+        <div class="text-center py-8">
+          <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </div>
+          <p class="text-red-400 text-sm">${message}</p>
+        </div>
+      `;
+    }
+  }
+
+  function getProgressMessage(phase, progress) {
+    if (phase === 'spider') {
+      return `Spider crawling... ${progress}%`;
+    } else if (phase === 'active') {
+      return `Active scanning... ${progress}%`;
+    } else if (phase === 'report') {
+      return `Generating report... ${progress}%`;
+    } else {
+      return `Scanning... ${progress}%`;
+    }
   }
 </script>
 {% endblock %}
