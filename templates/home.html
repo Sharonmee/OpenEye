@@ -23,7 +23,7 @@
         <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"/></svg>
         <span>New Scan</span>
       </a>
-      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link" title="Scan History">
+      <a href="/history/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link {% if request.path == '/history/' %}bg-cyan-900/40 text-cyan-300{% endif %}" title="Scan History">
         <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/></svg>
         <span>History</span>
       </a>

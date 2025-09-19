@@ -23,9 +23,9 @@
         <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"/></svg>
         <span>New Scan</span>
       </a>
-      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link" title="Reports">
-        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
-        <span>Reports</span>
+      <a href="/history/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link {% if request.path == '/history/' %}bg-cyan-900/40 text-cyan-300{% endif %}" title="Scan History">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/></svg>
+        <span>History</span>
       </a>
       <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link" title="Settings">
         <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
@@ -151,7 +151,7 @@
               </div>
             </div>
             <div class="flex items-center gap-4 mt-4">
-              <button type="submit" class="px-8 py-4 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 text-white font-extrabold rounded-2xl w-full md:w-auto shadow-2xl hover:scale-105 hover:from-cyan-400 hover:to-fuchsia-500 transition-transform duration-200 text-xl tracking-wider animate-glow ring-2 ring-cyan-400/40 hover:ring-fuchsia-400/60 focus:outline-none focus:ring-4 focus:ring-fuchsia-400/60 flex items-center justify-center gap-2">
+              <button type="submit" id="start-scan-btn" class="px-8 py-4 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 text-white font-extrabold rounded-2xl w-full md:w-auto shadow-2xl hover:scale-105 hover:from-cyan-400 hover:to-fuchsia-500 transition-transform duration-200 text-xl tracking-wider animate-glow ring-2 ring-cyan-400/40 hover:ring-fuchsia-400/60 focus:outline-none focus:ring-4 focus:ring-fuchsia-400/60 flex items-center justify-center gap-2">
                 <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 Start Scan
               </button>
@@ -210,16 +210,16 @@
                 <div class="bg-gradient-to-br from-cyan-900/80 via-slate-900/80 to-fuchsia-900/60 rounded-2xl p-6 flex flex-col shadow-2xl border border-cyan-400/30 hover:scale-105 hover:shadow-fuchsia-400/30 transition-transform duration-200 group relative overflow-hidden">
                   <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-fuchsia-500/20 to-cyan-400/10 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-cyan-100 font-bold text-lg truncate group-hover:text-fuchsia-300 transition-colors">{{ scan.target }}</span>
+                    <span class="text-cyan-100 font-bold text-lg truncate group-hover:text-fuchsia-300 transition-colors">{{ scan.target_url }}</span>
                     <span class="text-xs px-3 py-1 rounded-full font-bold shadow-md {{ scan.status|yesno:'bg-green-500/80,bg-yellow-500/80,bg-red-500/80' }} text-white uppercase tracking-wide animate-pulse">{{ scan.status|capfirst }}</span>
                   </div>
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-cyan-200 text-xs">Tool:</span>
-                    <span class="font-semibold text-fuchsia-300 text-xs">{{ scan.tool }}</span>
+                    <span class="font-semibold text-fuchsia-300 text-xs">{{ scan.get_tool_display }}</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="text-cyan-200 text-xs">Date:</span>
-                    <span class="font-semibold text-cyan-100 text-xs">{{ scan.date }}</span>
+                    <span class="font-semibold text-cyan-100 text-xs">{{ scan.created_at|date:"M d, Y" }}</span>
                   </div>
                   <a href="/scan/{{ scan.id }}/" class="mt-4 text-fuchsia-400 hover:underline text-sm font-bold transition-colors">View Details →</a>
                 </div>
@@ -250,6 +250,15 @@
     const estimatedTime = document.getElementById('estimated-time');
     const scanLevel = document.getElementById('scan-level');
     const scanStatus = document.getElementById('scan-status');
+    const startScanBtn = document.getElementById('start-scan-btn');
+    const form = document.querySelector('form');
+
+    let selectedTool = 'zap';
+    let currentScanId = null;
+    let statusCheckInterval = null;
+
+    // Check ZAP status on page load
+    checkZapStatus();
 
     // Tool selection
     toolCards.forEach(card => {
@@ -260,21 +269,23 @@
         });
         // Add active class to clicked card
         this.classList.add('border-cyan-400', 'bg-cyan-900/60');
-        const tool = this.getAttribute('data-tool');
+        selectedTool = this.getAttribute('data-tool');
         selectedToolSpan.textContent = this.querySelector('span.text-base').textContent;
+        
         // Show/hide tool-specific options
         document.getElementById('zap-options').classList.add('hidden');
         document.getElementById('nmap-options').classList.add('hidden');
         document.getElementById('nikto-options').classList.add('hidden');
-        if (tool === 'zap') {
+        
+        if (selectedTool === 'zap') {
           document.getElementById('zap-options').classList.remove('hidden');
           estimatedTime.textContent = '15-30 minutes';
           scanLevel.textContent = 'Medium';
-        } else if (tool === 'nmap') {
+        } else if (selectedTool === 'nmap') {
           document.getElementById('nmap-options').classList.remove('hidden');
           estimatedTime.textContent = '5-15 minutes';
           scanLevel.textContent = 'Comprehensive';
-        } else if (tool === 'nikto') {
+        } else if (selectedTool === 'nikto') {
           document.getElementById('nikto-options').classList.remove('hidden');
           estimatedTime.textContent = '10-20 minutes';
           scanLevel.textContent = 'Full';
@@ -287,9 +298,175 @@
       targetDisplay.textContent = this.value || '-';
     });
 
-    // Example scan status update (simulate scan)
-    // You can replace this with your actual scan logic
-    // ...
+    // Form submission
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      startScan();
+    });
+
+    async function checkZapStatus() {
+      try {
+        const response = await fetch('/scan/api/zap-status/');
+        const data = await response.json();
+        
+        if (!data.zap_running) {
+          updateScanStatus('ZAP is not running. Please start ZAP before scanning.', 'error');
+          startScanBtn.disabled = true;
+          startScanBtn.textContent = 'ZAP Not Available';
+        } else {
+          updateScanStatus('Ready to start scan', 'ready');
+          startScanBtn.disabled = false;
+        }
+      } catch (error) {
+        console.error('Error checking ZAP status:', error);
+        updateScanStatus('Unable to connect to ZAP', 'error');
+        startScanBtn.disabled = true;
+      }
+    }
+
+    async function startScan() {
+      const targetUrl = targetInput.value.trim();
+      if (!targetUrl) {
+        alert('Please enter a target URL');
+        return;
+      }
+
+      if (selectedTool !== 'zap') {
+        alert('Only ZAP scanning is currently supported');
+        return;
+      }
+
+      // Get scan configuration
+      const scanConfig = {
+        max_children: 10,
+        scan_policy: 'Default Policy'
+      };
+
+      try {
+        startScanBtn.disabled = true;
+        startScanBtn.innerHTML = '<svg class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> Starting...';
+        
+        updateScanStatus('Starting scan...', 'running');
+
+        const response = await fetch('/scan/api/start-scan/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            target_url: targetUrl,
+            tool: selectedTool,
+            scan_config: scanConfig
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          currentScanId = data.scan_id;
+          updateScanStatus('Scan started successfully', 'running');
+          startStatusPolling();
+        } else {
+          throw new Error(data.error || 'Failed to start scan');
+        }
+      } catch (error) {
+        console.error('Error starting scan:', error);
+        updateScanStatus(`Error: ${error.message}`, 'error');
+        startScanBtn.disabled = false;
+        startScanBtn.innerHTML = '<svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Start Scan';
+      }
+    }
+
+    function startStatusPolling() {
+      if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+      }
+
+      statusCheckInterval = setInterval(async () => {
+        try {
+          const response = await fetch(`/scan/api/scan/${currentScanId}/status/`);
+          const data = await response.json();
+          
+          if (data.status === 'completed') {
+            clearInterval(statusCheckInterval);
+            updateScanStatus('Scan completed!', 'completed');
+            startScanBtn.disabled = false;
+            startScanBtn.innerHTML = '<svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Start Scan';
+            
+            // Redirect to results page
+            setTimeout(() => {
+              window.location.href = `/scan/${currentScanId}/`;
+            }, 2000);
+          } else if (data.status === 'failed') {
+            clearInterval(statusCheckInterval);
+            updateScanStatus('Scan failed', 'error');
+            startScanBtn.disabled = false;
+            startScanBtn.innerHTML = '<svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Start Scan';
+          } else if (data.status === 'running') {
+            updateScanStatus('Scan in progress...', 'running');
+          }
+        } catch (error) {
+          console.error('Error checking scan status:', error);
+        }
+      }, 3000);
+    }
+
+    function updateScanStatus(message, status) {
+      const statusDiv = document.getElementById('scan-status');
+      let statusClass = '';
+      let icon = '';
+
+      switch (status) {
+        case 'ready':
+          statusClass = 'text-slate-400';
+          icon = '<svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>';
+          break;
+        case 'running':
+          statusClass = 'text-yellow-400';
+          icon = '<svg class="w-8 h-8 text-yellow-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>';
+          break;
+        case 'completed':
+          statusClass = 'text-green-400';
+          icon = '<svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+          break;
+        case 'error':
+          statusClass = 'text-red-400';
+          icon = '<svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
+          break;
+      }
+
+      statusDiv.innerHTML = `
+        <div class="text-center py-8">
+          <div class="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+            ${icon}
+          </div>
+          <p class="${statusClass} text-sm">${message}</p>
+        </div>
+      `;
+    }
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+      if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+      }
+    });
   });
 </script>
 {% endblock %}
