@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from scanner.views import home
+from scanner.views import home, scan
 from scanner.cognito_auth import cognito_login, cognito_callback, cognito_logout
 
 urlpatterns = [
@@ -24,6 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', home, name='home'),
+    path('scan/', scan, name='scan'),
     path('login/', cognito_login, name='cognito_login'),
     path('authorize/', cognito_callback, name='cognito_callback'),
     path('logout/', cognito_logout, name='cognito_logout'),

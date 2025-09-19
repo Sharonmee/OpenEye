@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+
+{% block title %}New Scan - OpenEye{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 w-full">
+  <!-- Sidebar (shield logo and Reports link) -->
+  <aside class="w-64 bg-gradient-to-b from-slate-950 to-slate-900/80 shadow-xl flex flex-col py-8 px-4 border-r border-cyan-900/40 backdrop-blur-xl rounded-r-3xl transition-all duration-300">
+    <div class="mb-10 flex items-center gap-3">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <span class="text-3xl font-extrabold text-cyan-400 tracking-tight">OpenEye</span>
+    </div>
+    <nav class="flex flex-col gap-2 mt-6">
+      <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link {% if request.path == '/' %}bg-cyan-900/40 text-cyan-300{% endif %}" title="Dashboard">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="/scan/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link {% if request.path == '/scan/' %}bg-cyan-900/40 text-cyan-300{% endif %}" title="Start New Scan">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"/></svg>
+        <span>New Scan</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link" title="Reports">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <span>Reports</span>
+      </a>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link" title="Settings">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        <span>Settings</span>
+      </a>
+    </nav>
+    <div class="mt-auto pt-10 flex flex-col gap-3">
+      <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-cyan-300 font-medium sidebar-link" title="Help & About">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+        <span>Help & About</span>
+      </a>
+      <div class="flex items-center gap-3 px-4 py-3">
+        {% if user.is_authenticated %}
+          <img src="https://i.pravatar.cc/40" alt="User" class="rounded-full w-10 h-10 border-2 border-cyan-400 shadow-lg"/>
+          <a href="{% url 'cognito_logout' %}" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg ml-2">Logout</a>
+        {% else %}
+          <a href="{% url 'cognito_login' %}" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-bold rounded-lg transition-colors shadow-lg">Sign In</a>
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-x-hidden">
+    <!-- Scan Page Header -->
+    <section class="flex flex-col items-center justify-center text-center py-8 md:py-12 px-4 md:px-0">
+      <div class="relative z-10 max-w-2xl mx-auto">
+        <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 tracking-tight drop-shadow-lg">Start a New Scan</h1>
+        <p class="text-lg md:text-2xl text-cyan-200 mb-8 font-medium">Configure your scan and get instant results.</p>
+      </div>
+    </section>
+
+    <!-- Scan Configuration and Info Panel -->
+    <section class="flex flex-col items-center justify-center w-full py-4 md:py-8">
+      <div class="max-w-6xl w-full grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left: Scan Configuration -->
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Tool Selection -->
+          <div class="bg-slate-800/60 rounded-xl p-6 flex flex-col shadow-lg border border-cyan-900/40">
+            <h3 class="text-cyan-200 font-bold text-lg mb-4">Select Scanning Tool</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <button class="tool-card group flex flex-col items-center px-4 py-4 rounded-xl border-2 border-transparent hover:border-cyan-400 focus:border-cyan-400 bg-cyan-900/30 hover:bg-cyan-900/50 transition cursor-pointer" data-tool="zap">
+                <img src="https://raw.githubusercontent.com/OWASP/owasp-mastg/main/static/logo/owasp-logo.png" alt="OWASP ZAP" class="w-10 h-10 mb-1 group-hover:scale-110 transition"/>
+                <span class="text-base text-cyan-100 font-semibold">ZAP</span>
+              </button>
+              <button class="tool-card group flex flex-col items-center px-4 py-4 rounded-xl border-2 border-transparent hover:border-cyan-400 focus:border-cyan-400 bg-cyan-900/30 hover:bg-cyan-900/50 transition cursor-pointer" data-tool="nmap">
+                <img src="https://nmap.org/images/nmap-logo-64.png" alt="Nmap" class="w-10 h-10 mb-1 group-hover:scale-110 transition"/>
+                <span class="text-base text-cyan-100 font-semibold">Nmap</span>
+              </button>
+              <button class="tool-card group flex flex-col items-center px-4 py-4 rounded-xl border-2 border-transparent hover:border-cyan-400 focus:border-cyan-400 bg-cyan-900/30 hover:bg-cyan-900/50 transition cursor-pointer" data-tool="nikto">
+                <img src="https://avatars.githubusercontent.com/u/67109815?s=200&v=4" alt="Nikto" class="w-10 h-10 mb-1 group-hover:scale-110 transition"/>
+                <span class="text-base text-cyan-100 font-semibold">Nikto</span>
+              </button>
+            </div>
+          </div>
+          <!-- Scan Form -->
+          <form class="bg-slate-800/60 rounded-xl p-6 flex flex-col shadow-lg border border-cyan-900/40 gap-4">
+            <h3 class="text-cyan-200 font-bold text-lg mb-4">Scan Configuration</h3>
+            <input type="text" id="target-input" placeholder="Target URL or IP" class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 placeholder-cyan-300 focus:ring-2 focus:ring-cyan-400 text-base" required />
+            <!-- Tool-specific options (show/hide with JS) -->
+            <div id="zap-options" class="hidden flex flex-col gap-3">
+              <label class="text-cyan-100 text-sm font-medium">Spider Type:</label>
+              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                <option value="traditional">Traditional</option>
+                <option value="ajax">AJAX</option>
+                <option value="both">Both</option>
+              </select>
+              <label class="text-cyan-100 text-sm font-medium">Scan Level:</label>
+              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                <option value="low">Low (Quick)</option>
+                <option value="medium" selected>Medium (Balanced)</option>
+                <option value="high">High (Thorough)</option>
+              </select>
+              <label class="text-cyan-100 text-sm font-medium">Session Persistence:</label>
+              <input type="checkbox" class="toggle toggle-info toggle-xs" />
+              <span class="text-cyan-100 text-xs">Persist session</span>
+            </div>
+            <div id="nmap-options" class="hidden flex flex-col gap-3">
+              <label class="text-cyan-100 text-sm font-medium">Scan Type:</label>
+              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                <option value="quick">Quick Scan</option>
+                <option value="comprehensive">Comprehensive Scan</option>
+                <option value="stealth">Stealth Scan</option>
+              </select>
+              <label class="text-cyan-100 text-sm font-medium">Port Range:</label>
+              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                <option value="common">Common Ports</option>
+                <option value="all">All Ports</option>
+                <option value="custom">Custom Range</option>
+              </select>
+            </div>
+            <div id="nikto-options" class="hidden flex flex-col gap-3">
+              <label class="text-cyan-100 text-sm font-medium">Scan Type:</label>
+              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                <option value="basic">Basic Scan</option>
+                <option value="full">Full Scan</option>
+                <option value="malware">Malware Scan</option>
+              </select>
+              <label class="text-cyan-100 text-sm font-medium">Timeout:</label>
+              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                <option value="30">30 seconds</option>
+                <option value="60">60 seconds</option>
+                <option value="120">120 seconds</option>
+              </select>
+            </div>
+            <!-- Scan Schedule -->
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex-1">
+                <label class="text-cyan-100 text-sm font-medium">Scan Type:</label>
+                <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                  <option value="immediate" selected>Run Immediately</option>
+                  <option value="scheduled">Schedule for Later</option>
+                  <option value="recurring">Recurring Scan</option>
+                </select>
+              </div>
+              <div class="flex-1">
+                <label class="text-cyan-100 text-sm font-medium">Priority:</label>
+                <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 mt-4">
+              <button type="submit" class="px-8 py-4 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 text-white font-extrabold rounded-2xl w-full md:w-auto shadow-2xl hover:scale-105 hover:from-cyan-400 hover:to-fuchsia-500 transition-transform duration-200 text-xl tracking-wider animate-glow ring-2 ring-cyan-400/40 hover:ring-fuchsia-400/60 focus:outline-none focus:ring-4 focus:ring-fuchsia-400/60 flex items-center justify-center gap-2">
+                <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                Start Scan
+              </button>
+              <button type="button" class="px-8 py-4 bg-slate-600 hover:bg-slate-700 text-white font-extrabold rounded-2xl shadow-xl transition-colors text-xl">Save as Template</button>
+            </div>
+          </form>
+        </div>
+        <!-- Right: Scan Status & Info -->
+        <div class="space-y-6">
+          <!-- Scan Status -->
+          <div class="bg-slate-800/60 rounded-xl p-6 shadow-lg border border-cyan-900/40">
+            <h3 class="text-cyan-200 font-bold text-lg mb-4">Scan Status</h3>
+            <div id="scan-status" class="text-center py-8">
+              <div class="w-16 h-16 bg-slate-700/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+              </div>
+              <p class="text-slate-400 text-sm">Ready to start scan</p>
+            </div>
+          </div>
+          <!-- Scan Information -->
+          <div class="bg-slate-800/60 rounded-xl p-6 shadow-lg border border-cyan-900/40">
+            <h3 class="text-cyan-200 font-bold text-lg mb-4">Scan Information</h3>
+            <div class="space-y-3">
+              <div class="flex justify-between">
+                <span class="text-slate-400 text-sm">Selected Tool:</span>
+                <span id="selected-tool" class="text-white text-sm">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400 text-sm">Target:</span>
+                <span id="target-display" class="text-white text-sm">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400 text-sm">Estimated Time:</span>
+                <span id="estimated-time" class="text-white text-sm">-</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400 text-sm">Scan Level:</span>
+                <span id="scan-level" class="text-white text-sm">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Recent Scans Panel (consistent with home page) -->
+    <section class="flex flex-col items-center justify-center w-full py-4 md:py-8">
+      <div class="max-w-4xl w-full">
+        <h2 class="text-cyan-200 font-bold text-xl mb-4 flex items-center gap-2"><svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/></svg>Recent Scans</h2>
+        {% if user.is_authenticated %}
+          {% if recent_scans %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {% for scan in recent_scans %}
+                <div class="bg-gradient-to-br from-cyan-900/80 via-slate-900/80 to-fuchsia-900/60 rounded-2xl p-6 flex flex-col shadow-2xl border border-cyan-400/30 hover:scale-105 hover:shadow-fuchsia-400/30 transition-transform duration-200 group relative overflow-hidden">
+                  <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-fuchsia-500/20 to-cyan-400/10 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-cyan-100 font-bold text-lg truncate group-hover:text-fuchsia-300 transition-colors">{{ scan.target }}</span>
+                    <span class="text-xs px-3 py-1 rounded-full font-bold shadow-md {{ scan.status|yesno:'bg-green-500/80,bg-yellow-500/80,bg-red-500/80' }} text-white uppercase tracking-wide animate-pulse">{{ scan.status|capfirst }}</span>
+                  </div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-cyan-200 text-xs">Tool:</span>
+                    <span class="font-semibold text-fuchsia-300 text-xs">{{ scan.tool }}</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-cyan-200 text-xs">Date:</span>
+                    <span class="font-semibold text-cyan-100 text-xs">{{ scan.date }}</span>
+                  </div>
+                  <a href="/scan/{{ scan.id }}/" class="mt-4 text-fuchsia-400 hover:underline text-sm font-bold transition-colors">View Details →</a>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="text-cyan-100/80 text-center">No recent scans yet. <a href="/scan/" class="text-fuchsia-400 underline font-bold">Start your first scan!</a></div>
+          {% endif %}
+        {% else %}
+          <div class="bg-gradient-to-br from-cyan-900/80 via-slate-900/80 to-fuchsia-900/60 rounded-2xl p-10 flex flex-col items-center justify-center shadow-2xl border border-cyan-400/30">
+            <svg class="w-14 h-14 text-fuchsia-400 mb-4 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/></svg>
+            <h3 class="text-cyan-200 font-extrabold text-2xl mb-2">See your recent scans</h3>
+            <p class="text-cyan-100/80 text-base text-center mb-4">Sign in to view your scan history and results.</p>
+            <a href="{% url 'cognito_login' %}" class="px-8 py-3 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 hover:from-cyan-400 hover:to-fuchsia-500 text-white text-lg font-extrabold rounded-2xl transition-colors shadow-xl animate-glow">Sign In to View</a>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const toolCards = document.querySelectorAll('.tool-card');
+    const targetInput = document.getElementById('target-input');
+    const selectedToolSpan = document.getElementById('selected-tool');
+    const targetDisplay = document.getElementById('target-display');
+    const estimatedTime = document.getElementById('estimated-time');
+    const scanLevel = document.getElementById('scan-level');
+    const scanStatus = document.getElementById('scan-status');
+
+    // Tool selection
+    toolCards.forEach(card => {
+      card.addEventListener('click', function() {
+        // Remove active class from all cards
+        toolCards.forEach(c => {
+          c.classList.remove('border-cyan-400', 'bg-cyan-900/60');
+        });
+        // Add active class to clicked card
+        this.classList.add('border-cyan-400', 'bg-cyan-900/60');
+        const tool = this.getAttribute('data-tool');
+        selectedToolSpan.textContent = this.querySelector('span.text-base').textContent;
+        // Show/hide tool-specific options
+        document.getElementById('zap-options').classList.add('hidden');
+        document.getElementById('nmap-options').classList.add('hidden');
+        document.getElementById('nikto-options').classList.add('hidden');
+        if (tool === 'zap') {
+          document.getElementById('zap-options').classList.remove('hidden');
+          estimatedTime.textContent = '15-30 minutes';
+          scanLevel.textContent = 'Medium';
+        } else if (tool === 'nmap') {
+          document.getElementById('nmap-options').classList.remove('hidden');
+          estimatedTime.textContent = '5-15 minutes';
+          scanLevel.textContent = 'Comprehensive';
+        } else if (tool === 'nikto') {
+          document.getElementById('nikto-options').classList.remove('hidden');
+          estimatedTime.textContent = '10-20 minutes';
+          scanLevel.textContent = 'Full';
+        }
+      });
+    });
+
+    // Target input
+    targetInput.addEventListener('input', function() {
+      targetDisplay.textContent = this.value || '-';
+    });
+
+    // Example scan status update (simulate scan)
+    // You can replace this with your actual scan logic
+    // ...
+  });
+</script>
+{% endblock %}
