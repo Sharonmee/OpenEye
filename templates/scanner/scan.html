@@ -172,6 +172,64 @@
               </div>
               <p class="text-slate-400 text-sm">Ready to start scan</p>
             </div>
+            
+            <!-- Progress Section (Hidden by default) -->
+            <div id="scan-progress" class="hidden">
+              <div class="mb-4">
+                <div class="flex justify-between text-sm text-cyan-200 mb-2">
+                  <span id="progress-text">Initializing scan...</span>
+                  <span id="progress-percentage">0%</span>
+                </div>
+                <div class="w-full bg-slate-700/50 rounded-full h-2">
+                  <div id="progress-bar" class="bg-gradient-to-r from-cyan-500 to-cyan-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+              </div>
+              
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <div id="phase-spider" class="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                  </div>
+                  <span class="text-cyan-200 text-sm">Spider Crawling</span>
+                  <span id="spider-status" class="text-slate-400 text-xs">Pending</span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <div id="phase-active" class="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                  </div>
+                  <span class="text-cyan-200 text-sm">Active Scanning</span>
+                  <span id="active-status" class="text-slate-400 text-xs">Pending</span>
+                </div>
+                
+                <div class="flex items-center gap-3">
+                  <div id="phase-report" class="w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                  </div>
+                  <span class="text-cyan-200 text-sm">Generating Report</span>
+                  <span id="report-status" class="text-slate-400 text-xs">Pending</span>
+                </div>
+              </div>
+              
+              <div class="mt-4 pt-4 border-t border-cyan-900/40">
+                <div class="flex justify-between text-xs text-cyan-200">
+                  <span>Estimated time remaining:</span>
+                  <span id="time-remaining">Calculating...</span>
+                </div>
+              </div>
+              
+              <div class="mt-4">
+                <button id="cancel-scan" class="w-full px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 rounded-lg transition-colors text-sm font-medium">
+                  Cancel Scan
+                </button>
+              </div>
+            </div>
           </div>
           <!-- Scan Information -->
           <div class="bg-slate-800/60 rounded-xl p-6 shadow-lg border border-cyan-900/40">
@@ -404,16 +462,34 @@
             startScanBtn.disabled = false;
             startScanBtn.innerHTML = '<svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Start Scan';
           } else if (data.status === 'running') {
+            // Update progress based on scan phase
+            const progress = data.progress || 50;
+            const phase = data.phase || 'active';
+            
+            if (phase === 'spider') {
+              updateProgress(Math.min(progress, 30), 'Spider crawling...');
+              updatePhase('spider', 'running');
+            } else if (phase === 'active') {
+              updateProgress(Math.min(progress, 80), 'Active scanning...');
+              updatePhase('spider', 'completed');
+              updatePhase('active', 'running');
+            } else if (phase === 'report') {
+              updateProgress(Math.min(progress, 95), 'Generating report...');
+              updatePhase('active', 'completed');
+              updatePhase('report', 'running');
+            }
+            
             updateScanStatus('Scan in progress...', 'running');
           }
         } catch (error) {
           console.error('Error checking scan status:', error);
         }
-      }, 3000);
+      }, 2000); // Check more frequently for better UX
     }
 
     function updateScanStatus(message, status) {
       const statusDiv = document.getElementById('scan-status');
+      const progressDiv = document.getElementById('scan-progress');
       let statusClass = '';
       let icon = '';
 
@@ -423,14 +499,32 @@
           icon = '<svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>';
           break;
         case 'running':
+          // Show progress interface for running scans
+          if (progressDiv) {
+            statusDiv.classList.add('hidden');
+            progressDiv.classList.remove('hidden');
+            updateProgress(25, message);
+            updatePhase('spider', 'running');
+            return;
+          }
           statusClass = 'text-yellow-400';
           icon = '<svg class="w-8 h-8 text-yellow-400 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>';
           break;
         case 'completed':
+          if (progressDiv) {
+            updateProgress(100, message);
+            updatePhase('active', 'completed');
+            updatePhase('report', 'completed');
+            return;
+          }
           statusClass = 'text-green-400';
           icon = '<svg class="w-8 h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
           break;
         case 'error':
+          if (progressDiv) {
+            progressDiv.classList.add('hidden');
+            statusDiv.classList.remove('hidden');
+          }
           statusClass = 'text-red-400';
           icon = '<svg class="w-8 h-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>';
           break;
@@ -468,5 +562,60 @@
       }
     });
   });
+
+  // Enhanced progress tracking functions
+  function updateProgress(percentage, text) {
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const progressPercentage = document.getElementById('progress-percentage');
+    const timeRemaining = document.getElementById('time-remaining');
+    
+    if (progressBar) {
+      progressBar.style.width = percentage + '%';
+      progressPercentage.textContent = percentage + '%';
+      progressText.textContent = text;
+      
+      // Update time remaining
+      if (percentage < 100) {
+        const remaining = Math.max(0, Math.round((100 - percentage) * 0.5));
+        timeRemaining.textContent = remaining + ' minutes';
+      } else {
+        timeRemaining.textContent = 'Complete';
+      }
+    }
+  }
+
+  function updatePhase(phase, status) {
+    const phaseElement = document.getElementById(`phase-${phase}`);
+    const statusElement = document.getElementById(`${phase}-status`);
+    
+    if (phaseElement && statusElement) {
+      if (status === 'running') {
+        phaseElement.className = 'w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center animate-pulse';
+        phaseElement.innerHTML = '<svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>';
+        statusElement.textContent = 'Running';
+        statusElement.className = 'text-yellow-400 text-xs';
+      } else if (status === 'completed') {
+        phaseElement.className = 'w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center';
+        phaseElement.innerHTML = '<svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+        statusElement.textContent = 'Completed';
+        statusElement.className = 'text-green-400 text-xs';
+      }
+    }
+  }
+
+  function resetPhases() {
+    ['spider', 'active', 'report'].forEach(phase => {
+      const phaseElement = document.getElementById(`phase-${phase}`);
+      const statusElement = document.getElementById(`${phase}-status`);
+      
+      if (phaseElement && statusElement) {
+        phaseElement.className = 'w-6 h-6 rounded-full bg-slate-700/50 flex items-center justify-center';
+        phaseElement.innerHTML = '<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>';
+        statusElement.textContent = 'Pending';
+        statusElement.className = 'text-slate-400 text-xs';
+      }
+    });
+  }
 </script>
 {% endblock %}
