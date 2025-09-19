@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Scan History - OpenEye{% endblock %}
+
+{% block content %}
+<div class="flex min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-cyan-950 w-full">
+  <!-- Sidebar -->
+  <aside class="w-64 bg-gradient-to-b from-slate-950 to-slate-900/80 shadow-xl flex flex-col py-8 px-4 border-r border-cyan-900/40 backdrop-blur-xl rounded-r-3xl transition-all duration-300">
+    <div class="mb-10 flex items-center gap-3">
+      <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <span class="text-3xl font-extrabold text-cyan-400 tracking-tight">OpenEye</span>
+    </div>
+    <nav class="flex flex-col gap-2 mt-6">
+      <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link {% if request.path == '/' %}bg-cyan-900/40 text-cyan-300{% endif %}" title="Dashboard">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M13 5v6h6"/></svg>
+        <span>Dashboard</span>
+      </a>
+      <a href="/scan/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link {% if request.path == '/scan/' %}bg-cyan-900/40 text-cyan-300{% endif %}" title="Start New Scan">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3"/></svg>
+        <span>New Scan</span>
+      </a>
+      <a href="/scan/history/" class="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-cyan-900/40 hover:text-cyan-300 transition text-gray-300 font-medium sidebar-link {% if request.path == '/scan/history/' %}bg-cyan-900/40 text-cyan-300{% endif %}" title="Scan History">
+        <svg class="h-6 w-6 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/></svg>
+        <span>History</span>
+      </a>
+    </nav>
+    <div class="mt-auto pt-10 flex flex-col gap-3">
+      <div class="flex items-center gap-3 px-4 py-3">
+        {% if user.is_authenticated %}
+          <img src="https://i.pravatar.cc/40" alt="User" class="rounded-full w-10 h-10 border-2 border-cyan-400 shadow-lg"/>
+          <a href="{% url 'cognito_logout' %}" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors shadow-lg">Logout</a>
+        {% else %}
+          <a href="{% url 'cognito_login' %}" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-bold rounded-lg transition-colors shadow-lg">Sign In</a>
+        {% endif %}
+      </div>
+    </div>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-x-hidden">
+    <!-- Header -->
+    <div class="bg-transparent flex items-center justify-between h-16 w-full px-8 mt-4">
+      <div class="flex items-center gap-4">
+        <h1 class="text-2xl font-bold text-white">Scan History</h1>
+      </div>
+      <div class="flex items-center gap-4">
+        {% if user.is_authenticated %}
+          <span class="text-cyan-200 text-sm">Welcome, {{ user_email|default:user.username }}!</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Scan History -->
+    <div class="px-8 py-4">
+      {% if page_obj %}
+        <div class="space-y-4">
+          {% for scan in page_obj %}
+          <div class="bg-slate-800/60 rounded-xl p-6 shadow-lg border border-cyan-900/40 hover:border-cyan-400/60 transition-colors">
+            <div class="flex items-center justify-between mb-4">
+              <div class="flex items-center gap-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-cyan-500 to-fuchsia-500 rounded-lg flex items-center justify-center">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h3 class="text-lg font-bold text-cyan-200">{{ scan.target_url }}</h3>
+                  <p class="text-sm text-slate-400">{{ scan.get_tool_display }} • {{ scan.created_at|date:"M d, Y H:i" }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="px-3 py-1 rounded-full text-sm font-bold {{ scan.status|yesno:'bg-green-500/80,bg-yellow-500/80,bg-red-500/80' }} text-white uppercase">
+                  {{ scan.status|capfirst }}
+                </span>
+                {% if scan.status == 'completed' %}
+                <a href="/scan/{{ scan.id }}/" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition-colors">
+                  View Results
+                </a>
+                {% endif %}
+              </div>
+            </div>
+            
+            {% if scan.status == 'completed' and scan.results.summary %}
+            <div class="grid grid-cols-4 gap-4 mt-4">
+              <div class="text-center">
+                <div class="text-2xl font-bold text-red-400">{{ scan.results.summary.high_risk|default:0 }}</div>
+                <div class="text-xs text-slate-400">High Risk</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-yellow-400">{{ scan.results.summary.medium_risk|default:0 }}</div>
+                <div class="text-xs text-slate-400">Medium Risk</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-blue-400">{{ scan.results.summary.low_risk|default:0 }}</div>
+                <div class="text-xs text-slate-400">Low Risk</div>
+              </div>
+              <div class="text-center">
+                <div class="text-2xl font-bold text-gray-400">{{ scan.results.summary.informational|default:0 }}</div>
+                <div class="text-xs text-slate-400">Info</div>
+              </div>
+            </div>
+            {% endif %}
+            
+            {% if scan.duration %}
+            <div class="mt-4 text-sm text-slate-400">
+              Duration: {{ scan.duration }}
+            </div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="flex justify-center mt-8">
+          <nav class="flex items-center gap-2">
+            {% if page_obj.has_previous %}
+              <a href="?page=1" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">First</a>
+              <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">Previous</a>
+            {% endif %}
+            
+            <span class="px-3 py-2 bg-cyan-600 text-white rounded-lg">
+              Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">Next</a>
+              <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors">Last</a>
+            {% endif %}
+          </nav>
+        </div>
+        {% endif %}
+
+      {% else %}
+        <div class="bg-slate-800/60 rounded-xl p-12 shadow-lg border border-cyan-900/40 text-center">
+          <svg class="w-16 h-16 text-slate-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/>
+          </svg>
+          <h3 class="text-xl font-bold text-slate-400 mb-2">No scans found</h3>
+          <p class="text-slate-500 mb-6">You haven't run any scans yet. Start your first security scan!</p>
+          <a href="/scan/" class="px-6 py-3 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 hover:from-cyan-400 hover:to-fuchsia-500 text-white font-bold rounded-lg transition-colors shadow-lg">
+            Start New Scan
+          </a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+

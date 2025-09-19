@@ -108,16 +108,16 @@
                 <div class="bg-gradient-to-br from-cyan-900/80 via-slate-900/80 to-fuchsia-900/60 rounded-2xl p-6 flex flex-col shadow-2xl border border-cyan-400/30 hover:scale-105 hover:shadow-fuchsia-400/30 transition-transform duration-200 group relative overflow-hidden">
                   <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-fuchsia-500/20 to-cyan-400/10 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
                   <div class="flex items-center justify-between mb-2">
-                    <span class="text-cyan-100 font-bold text-lg truncate group-hover:text-fuchsia-300 transition-colors">{{ scan.target }}</span>
+                    <span class="text-cyan-100 font-bold text-lg truncate group-hover:text-fuchsia-300 transition-colors">{{ scan.target_url }}</span>
                     <span class="text-xs px-3 py-1 rounded-full font-bold shadow-md {{ scan.status|yesno:'bg-green-500/80,bg-yellow-500/80,bg-red-500/80' }} text-white uppercase tracking-wide animate-pulse">{{ scan.status|capfirst }}</span>
                   </div>
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-cyan-200 text-xs">Tool:</span>
-                    <span class="font-semibold text-fuchsia-300 text-xs">{{ scan.tool }}</span>
+                    <span class="font-semibold text-fuchsia-300 text-xs">{{ scan.get_tool_display }}</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="text-cyan-200 text-xs">Date:</span>
-                    <span class="font-semibold text-cyan-100 text-xs">{{ scan.date }}</span>
+                    <span class="font-semibold text-cyan-100 text-xs">{{ scan.created_at|date:"M d, Y" }}</span>
                   </div>
                   <a href="/scan/{{ scan.id }}/" class="mt-4 text-fuchsia-400 hover:underline text-sm font-bold transition-colors">View Details →</a>
                 </div>

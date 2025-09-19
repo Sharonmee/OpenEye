@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
-import psycopg2 
 
 load_dotenv()
 
@@ -38,7 +37,6 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'scanner',
-    'tailwind',
     'theme',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -47,7 +45,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
-TAILWIND_APP_NAME = 'theme'  # or whatever name you gave
 
 
 MIDDLEWARE = [
@@ -81,28 +78,17 @@ WSGI_APPLICATION = 'OpenEye.wsgi.application'
 
 
 # Database
-DB_NAME = os.environ.get('DB_NAME')
-DB_USERNAME = os.environ.get('DB_USERNAME')
-DB_PASSWORD = os.environ.get('PASSWORD')
-DB_HOST = os.environ.get('HOST')
-DB_PORT = os.environ.get('PORT')
-
+# Using SQLite for development
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        'NAME': DB_NAME,
-        'USER': DB_USERNAME,
-        'PASSWORD': DB_PASSWORD,
-        'HOST': DB_HOST,
-        'PORT': DB_PORT,
-        "OPTIONS": {
-            'connect_timeout': 5,  
-           
-        },
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-# print("connection details:", DATABASES)
+# ZAP Configuration
+ZAP_API_URL = os.environ.get('ZAP_API_URL', 'http://localhost:8080')
+ZAP_API_KEY = os.environ.get('ZAP_API_KEY', None)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators

@@ -20,11 +20,10 @@ from scanner.views import home, scan
 from scanner.cognito_auth import cognito_login, cognito_callback, cognito_logout
 
 urlpatterns = [
-    path('scanner/', include('scanner.urls')),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('', home, name='home'),
-    path('scan/', scan, name='scan'),
+    path('scan/', include('scanner.urls')),
     path('login/', cognito_login, name='cognito_login'),
     path('authorize/', cognito_callback, name='cognito_callback'),
     path('logout/', cognito_logout, name='cognito_logout'),
