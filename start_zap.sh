@@ -12,9 +12,8 @@ docker rm zap-container 2>/dev/null || true
 docker run -d \
   --name zap-container \
   -p 8080:8080 \
-  -p 8090:8090 \
-  -i owasp/zap2docker-stable:latest \
-  zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true -config api.addrs.addr.name=.* -config api.addrs.addr.regex=true
+  -i owasp/zap2docker-stable \
+  zap.sh -daemon -host 0.0.0.0 -port 8080 -config api.disablekey=true
 
 echo "ZAP is starting up..."
 echo "Waiting for ZAP to be ready..."
