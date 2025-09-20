@@ -65,19 +65,21 @@
           <!-- Tool Selection -->
           <div class="bg-slate-800/60 rounded-xl p-6 flex flex-col shadow-lg border border-cyan-900/40">
             <h3 class="text-cyan-200 font-bold text-lg mb-4">Select Scanning Tool</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <button class="tool-card group flex flex-col items-center px-4 py-4 rounded-xl border-2 border-transparent hover:border-cyan-400 focus:border-cyan-400 bg-cyan-900/30 hover:bg-cyan-900/50 transition cursor-pointer" data-tool="zap">
-                <img src="https://raw.githubusercontent.com/OWASP/owasp-mastg/main/static/logo/owasp-logo.png" alt="OWASP ZAP" class="w-10 h-10 mb-1 group-hover:scale-110 transition"/>
-                <span class="text-base text-cyan-100 font-semibold">ZAP</span>
+            <div class="flex justify-center">
+              <button class="tool-card group flex flex-col items-center px-8 py-6 rounded-xl border-2 border-cyan-400 bg-cyan-900/50 hover:bg-cyan-900/70 transition cursor-pointer shadow-lg" data-tool="zap">
+                <div class="w-16 h-16 mb-3 group-hover:scale-110 transition flex items-center justify-center">
+                  <svg class="w-12 h-12 text-cyan-400" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                  </svg>
+                </div>
+                <div class="text-center">
+                  <div class="text-lg text-cyan-100 font-bold mb-1">OWASP ZAP</div>
+                  <div class="text-sm text-cyan-300">Web Application Security Scanner</div>
+                </div>
               </button>
-              <button class="tool-card group flex flex-col items-center px-4 py-4 rounded-xl border-2 border-transparent hover:border-cyan-400 focus:border-cyan-400 bg-cyan-900/30 hover:bg-cyan-900/50 transition cursor-pointer" data-tool="nmap">
-                <img src="https://nmap.org/images/nmap-logo-64.png" alt="Nmap" class="w-10 h-10 mb-1 group-hover:scale-110 transition"/>
-                <span class="text-base text-cyan-100 font-semibold">Nmap</span>
-              </button>
-              <button class="tool-card group flex flex-col items-center px-4 py-4 rounded-xl border-2 border-transparent hover:border-cyan-400 focus:border-cyan-400 bg-cyan-900/30 hover:bg-cyan-900/50 transition cursor-pointer" data-tool="nikto">
-                <img src="https://avatars.githubusercontent.com/u/67109815?s=200&v=4" alt="Nikto" class="w-10 h-10 mb-1 group-hover:scale-110 transition"/>
-                <span class="text-base text-cyan-100 font-semibold">Nikto</span>
-              </button>
+            </div>
+            <div class="mt-4 text-center">
+              <p class="text-sm text-slate-400">More scanning tools coming soon...</p>
             </div>
           </div>
           <!-- Scan Form -->
@@ -85,7 +87,7 @@
             <h3 class="text-cyan-200 font-bold text-lg mb-4">Scan Configuration</h3>
             <input type="text" id="target-input" placeholder="Target URL or IP" class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 placeholder-cyan-300 focus:ring-2 focus:ring-cyan-400 text-base" required />
             <!-- Tool-specific options (show/hide with JS) -->
-            <div id="zap-options" class="hidden flex flex-col gap-3">
+            <div id="zap-options" class="flex flex-col gap-3">
               <label class="text-cyan-100 text-sm font-medium">Spider Type:</label>
               <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
                 <option value="traditional">Traditional</option>
@@ -99,36 +101,10 @@
                 <option value="high">High (Thorough)</option>
               </select>
               <label class="text-cyan-100 text-sm font-medium">Session Persistence:</label>
-              <input type="checkbox" class="toggle toggle-info toggle-xs" />
-              <span class="text-cyan-100 text-xs">Persist session</span>
-            </div>
-            <div id="nmap-options" class="hidden flex flex-col gap-3">
-              <label class="text-cyan-100 text-sm font-medium">Scan Type:</label>
-              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
-                <option value="quick">Quick Scan</option>
-                <option value="comprehensive">Comprehensive Scan</option>
-                <option value="stealth">Stealth Scan</option>
-              </select>
-              <label class="text-cyan-100 text-sm font-medium">Port Range:</label>
-              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
-                <option value="common">Common Ports</option>
-                <option value="all">All Ports</option>
-                <option value="custom">Custom Range</option>
-              </select>
-            </div>
-            <div id="nikto-options" class="hidden flex flex-col gap-3">
-              <label class="text-cyan-100 text-sm font-medium">Scan Type:</label>
-              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
-                <option value="basic">Basic Scan</option>
-                <option value="full">Full Scan</option>
-                <option value="malware">Malware Scan</option>
-              </select>
-              <label class="text-cyan-100 text-sm font-medium">Timeout:</label>
-              <select class="input input-bordered w-full bg-gray-900/80 text-white border-cyan-700/60 focus:ring-2 focus:ring-cyan-400 text-base">
-                <option value="30">30 seconds</option>
-                <option value="60">60 seconds</option>
-                <option value="120">120 seconds</option>
-              </select>
+              <div class="flex items-center gap-2">
+                <input type="checkbox" class="toggle toggle-info toggle-xs" />
+                <span class="text-cyan-100 text-xs">Persist session</span>
+              </div>
             </div>
             <!-- Scan Schedule -->
             <div class="flex flex-col md:flex-row gap-4">
@@ -151,11 +127,11 @@
               </div>
             </div>
             <div class="flex items-center gap-4 mt-4">
-              <button type="submit" id="start-scan-btn" class="px-8 py-4 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 text-white font-extrabold rounded-2xl w-full md:w-auto shadow-2xl hover:scale-105 hover:from-cyan-400 hover:to-fuchsia-500 transition-transform duration-200 text-xl tracking-wider animate-glow ring-2 ring-cyan-400/40 hover:ring-fuchsia-400/60 focus:outline-none focus:ring-4 focus:ring-fuchsia-400/60 flex items-center justify-center gap-2">
-                <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <button type="submit" id="start-scan-btn" class="px-8 py-3 bg-cyan-600/70 hover:bg-cyan-500/80 text-white font-semibold rounded-xl w-full md:w-auto shadow-lg hover:shadow-xl border border-cyan-500/50 hover:border-cyan-400/60 transition-all duration-200 text-lg tracking-wide focus:outline-none focus:ring-2 focus:ring-cyan-500/50 flex items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 Start Scan
               </button>
-              <button type="button" class="px-8 py-4 bg-slate-600 hover:bg-slate-700 text-white font-extrabold rounded-2xl shadow-xl transition-colors text-xl">Save as Template</button>
+              <button type="button" class="px-6 py-3 bg-slate-600/50 hover:bg-slate-500/60 text-slate-300 font-medium rounded-lg shadow-md hover:shadow-lg border border-slate-500/40 hover:border-slate-400/60 transition-all duration-200 text-base">Save as Template</button>
             </div>
           </form>
         </div>
@@ -291,7 +267,7 @@
             <svg class="w-14 h-14 text-fuchsia-400 mb-4 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/></svg>
             <h3 class="text-cyan-200 font-extrabold text-2xl mb-2">See your recent scans</h3>
             <p class="text-cyan-100/80 text-base text-center mb-4">Sign in to view your scan history and results.</p>
-            <a href="{% url 'cognito_login' %}" class="px-8 py-3 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 hover:from-cyan-400 hover:to-fuchsia-500 text-white text-lg font-extrabold rounded-2xl transition-colors shadow-xl animate-glow">Sign In to View</a>
+            <a href="{% url 'cognito_login' %}" class="px-6 py-3 bg-slate-700/60 hover:bg-slate-600/70 text-slate-200 font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl border border-slate-600/50 hover:border-cyan-500/50">Sign In to View</a>
           </div>
         {% endif %}
       </div>
@@ -318,38 +294,25 @@
     // Check ZAP status on page load
     checkZapStatus();
 
-    // Tool selection
+    // Tool selection - ZAP is pre-selected
     toolCards.forEach(card => {
       card.addEventListener('click', function() {
-        // Remove active class from all cards
-        toolCards.forEach(c => {
-          c.classList.remove('border-cyan-400', 'bg-cyan-900/60');
-        });
         // Add active class to clicked card
         this.classList.add('border-cyan-400', 'bg-cyan-900/60');
         selectedTool = this.getAttribute('data-tool');
-        selectedToolSpan.textContent = this.querySelector('span.text-base').textContent;
+        selectedToolSpan.textContent = 'OWASP ZAP';
         
-        // Show/hide tool-specific options
-        document.getElementById('zap-options').classList.add('hidden');
-        document.getElementById('nmap-options').classList.add('hidden');
-        document.getElementById('nikto-options').classList.add('hidden');
-        
-        if (selectedTool === 'zap') {
-          document.getElementById('zap-options').classList.remove('hidden');
-          estimatedTime.textContent = '15-30 minutes';
-          scanLevel.textContent = 'Medium';
-        } else if (selectedTool === 'nmap') {
-          document.getElementById('nmap-options').classList.remove('hidden');
-          estimatedTime.textContent = '5-15 minutes';
-          scanLevel.textContent = 'Comprehensive';
-        } else if (selectedTool === 'nikto') {
-          document.getElementById('nikto-options').classList.remove('hidden');
-          estimatedTime.textContent = '10-20 minutes';
-          scanLevel.textContent = 'Full';
-        }
+        // ZAP options are always visible
+        estimatedTime.textContent = '15-30 minutes';
+        scanLevel.textContent = 'Medium';
       });
     });
+
+    // Auto-select ZAP on page load
+    const zapCard = document.querySelector('[data-tool="zap"]');
+    if (zapCard) {
+      zapCard.click();
+    }
 
     // Target input
     targetInput.addEventListener('input', function() {

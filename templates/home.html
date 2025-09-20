@@ -70,7 +70,7 @@
       <div class="relative z-10 max-w-2xl mx-auto">
         <h1 class="text-5xl md:text-7xl font-extrabold text-white mb-6 tracking-tight drop-shadow-lg animate-fade-in">Scan Smarter. Stay Safer.</h1>
         <p class="text-xl md:text-2xl text-cyan-200 mb-10 font-medium animate-fade-in delay-100">OpenEye empowers you to find and fix vulnerabilities with ease.<br class="hidden md:block"/> Fast, beautiful, and open source.</p>
-        <a href="/scan/" class="flex items-center justify-center w-full max-w-xl mx-auto py-8 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 text-white font-medium text-3xl  rounded-full shadow-2xl hover:scale-110 hover:from-cyan-400 hover:to-fuchsia-500 transition-transform duration-200 text-3xl animate-pulse ring-8 ring-cyan-400/30 focus:outline-none focus:ring-8 focus:ring-fuchsia-400/40 uppercase tracking-widest drop-shadow-xl" style="box-shadow: 0 0 0 8px rgba(236, 72, 153, 0.2), 0 10px 40px 0 rgba(34,211,238,0.25); letter-spacing: 0.08em;">
+        <a href="/scan/" class="flex items-center justify-center w-full max-w-xl mx-auto py-6 bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-2xl rounded-full shadow-lg hover:shadow-xl transition-all duration-200 uppercase tracking-wide focus:outline-none focus:ring-4 focus:ring-cyan-400/50">
           Start New Scan
         </a>
       </div>
@@ -105,11 +105,10 @@
           {% if recent_scans %}
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {% for scan in recent_scans %}
-                <div class="bg-gradient-to-br from-cyan-900/80 via-slate-900/80 to-fuchsia-900/60 rounded-2xl p-6 flex flex-col shadow-2xl border border-cyan-400/30 hover:scale-105 hover:shadow-fuchsia-400/30 transition-transform duration-200 group relative overflow-hidden">
-                  <div class="absolute -top-4 -right-4 w-24 h-24 bg-gradient-to-br from-fuchsia-500/20 to-cyan-400/10 rounded-full blur-2xl opacity-60 pointer-events-none"></div>
+                <div class="bg-slate-800/60 rounded-xl p-6 flex flex-col shadow-lg border border-cyan-900/40 hover:shadow-xl transition-shadow duration-200 group">
                   <div class="flex items-center justify-between mb-2">
                     <span class="text-cyan-100 font-bold text-lg truncate group-hover:text-fuchsia-300 transition-colors">{{ scan.target_url }}</span>
-                    <span class="text-xs px-3 py-1 rounded-full font-bold shadow-md {{ scan.status|yesno:'bg-green-500/80,bg-yellow-500/80,bg-red-500/80' }} text-white uppercase tracking-wide animate-pulse">{{ scan.status|capfirst }}</span>
+                    <span class="text-xs px-3 py-1 rounded-full font-bold shadow-md {{ scan.status|yesno:'bg-green-500/80,bg-yellow-500/80,bg-red-500/80' }} text-white uppercase tracking-wide">{{ scan.status|capfirst }}</span>
                   </div>
                   <div class="flex items-center gap-2 mb-1">
                     <span class="text-cyan-200 text-xs">Tool:</span>
@@ -131,7 +130,7 @@
             <svg class="w-14 h-14 text-fuchsia-400 mb-4 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6"/></svg>
             <h3 class="text-cyan-200 font-extrabold text-2xl mb-2">See your recent scans</h3>
             <p class="text-cyan-100/80 text-base text-center mb-4">Sign in to view your scan history and results.</p>
-            <a href="{% url 'cognito_login' %}" class="px-8 py-3 bg-gradient-to-r from-fuchsia-500 via-cyan-400 to-cyan-500 hover:from-cyan-400 hover:to-fuchsia-500 text-white text-lg font-extrabold rounded-2xl transition-colors shadow-xl animate-glow">Sign In to View</a>
+            <a href="{% url 'cognito_login' %}" class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white text-lg font-semibold rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">Sign In to View</a>
           </div>
         {% endif %}
       </div>
